@@ -22,7 +22,7 @@ var modRoles = []string{
 	"283590599808909332", // moderators
 }
 
-const modLogChannel = "278517063587463171"
+const modLogChannel = "303958138489667584"
 
 // END_CONFIG
 

@@ -10,7 +10,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-var karmaRegexp = regexp.MustCompile(`^<@!?(\d+)>(\+\+|--)(?: (.*))?$`)
+var karmaRegexp = regexp.MustCompile(`^<@!?(\d+)> ?(\+\+|--)(?: (.*))?$`)
 
 func (b *bot) karmaGet(m *discordgo.Message, uid string) {
 	karma := b.karma.Get(uid)

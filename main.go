@@ -453,3 +453,14 @@ func MemberName(member *discordgo.Member) string {
 	}
 	return member.User.Username
 }
+
+func everyone(guildID string) string {
+	return "<@&" + guildID + ">"
+}
+
+func stripEveryone(guildID string, message string) string {
+	message = strings.ReplaceAll(message, everyone(guildID), "")
+	message = strings.ReplaceAll(message, "@everyone", "")
+	message = strings.ReplaceAll(message, "@here", "")
+	return message
+}

@@ -44,6 +44,7 @@ const itsLuaMessage = `It's Lua, not LUA. https://www.lua.org/about.html
 
 type bot struct {
 	discord *discordgo.Session
+	karma   *karmaBox
 }
 
 func main() {
@@ -58,7 +59,12 @@ func main() {
 	}
 	discord.StateEnabled = true
 
-	bot := bot{discord}
+	karma, err := newKarmaBox("karma.json")
+	if err != nil {
+		panic(err)
+	}
+
+	bot := bot{discord, karma}
 
 	discord.AddHandler(bot.onMessageCreate)
 
@@ -97,6 +103,18 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 	// This isn't required in this specific example but it's a good practice.
 	if m.Author.ID == s.State.User.ID {
 		return
+	}
+
+	if karmaRegexp.MatchString(m.Content) {
+		parts := karmaRegexp.FindStringSubmatch(m.Content)
+
+		uid := parts[1]
+		positive := parts[2] == "++"
+		reason := ""
+		if len(parts) == 4 {
+			reason = parts[3]
+		}
+		b.karmaAction(m.Message, uid, positive, reason)
 	}
 
 	parts := strings.Split(m.Content, " ")
@@ -415,4 +433,11 @@ func printChannels(chans []*discordgo.Channel) {
 		fmt.Printf("\t%s @ %d (%s)\n", c.Name, c.Position, c.ID)
 	}
 	fmt.Println("}")
+}
+
+func MemberName(member *discordgo.Member) string {
+	if member.Nick != "" {
+		return member.Nick
+	}
+	return member.User.Username
 }

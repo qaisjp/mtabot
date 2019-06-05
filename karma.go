@@ -1,0 +1,79 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"regexp"
+
+	"github.com/bwmarrin/discordgo"
+)
+
+var karmaRegexp = regexp.MustCompile(`^<@!?(\d+)>(\+\+|--)(?: (.*))?$`)
+
+func (b *bot) karmaAction(m *discordgo.Message, uid string, positive bool, reason string) {
+	// If performing action on self, make it negative
+	if uid == m.Author.ID {
+		positive = false
+	}
+
+	add := 1
+	if positive == false {
+		add = -1
+	}
+
+	new, err := b.karma.Update(uid, add)
+	if err != nil {
+		b.discord.ChannelMessageSend(m.ChannelID, "ERROR: Could not update karma: "+err.Error())
+		return
+	}
+
+	member, err := b.Member(m.GuildID, uid)
+	if err != nil {
+		b.discord.ChannelMessageSend(m.ChannelID, "ERROR: Could not get target user name: "+err.Error())
+		return
+	}
+
+	b.discord.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s now has %d karma %s", MemberName(member), new, reason))
+}
+
+type karmaBox struct {
+	filename string
+	m        map[string]int
+}
+
+func (k *karmaBox) Update(user string, add int) (newKarma int, err error) {
+	k.m[user] = k.m[user] + add
+	if err := k.Save(); err != nil {
+		return 0, err
+	}
+	return k.m[user], nil
+}
+
+func (k *karmaBox) Save() error {
+	b, err := json.Marshal(k.m)
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(k.filename, b, 0644)
+}
+
+func newKarmaBox(filename string) (*karmaBox, error) {
+	box := karmaBox{filename: filename}
+
+	b := []byte("{}")
+	if _, err := os.Stat(filename); !os.IsNotExist(err) {
+		b, err = ioutil.ReadFile(filename)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if err := json.Unmarshal(b, &box.m); err != nil {
+		return nil, err
+	}
+
+	return &box, nil
+}

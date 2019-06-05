@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -15,6 +16,8 @@ import (
 // CONFIG
 const guild = "278474088903606273"
 const muteRole = "560113810577555476"
+const pchatCategory = "584767048035467304"
+const archiveCategory = "584765668470161408"
 
 var modRoles = []string{
 	"278474612755398667", // mta team
@@ -23,6 +26,9 @@ var modRoles = []string{
 }
 
 const modLogChannel = "303958138489667584"
+
+const pChatInfoSeparator = "DO NOT MODIFY FROM THIS POINT ONWARDS:"
+const pChatInstructions = "- Use `!pchat start` to invite the user to this channel.\n- Use `!pchat stop` to remove the user.\n- Use `!pchat archive` to archive this chat. Ask an admin to unarchive."
 
 // END_CONFIG
 
@@ -99,6 +105,11 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 		shouldMute := parts[0] == "!cmute"
 		b.muteAction(s, m.Message, parts, shouldMute)
 		return
+	} else if parts[0] == "!pchat" {
+		if len(parts) == 1 {
+			return
+		}
+		b.privateChatAction(s, m.Message, parts[1:])
 	}
 
 	// If the message contains "LUA" reply with a "Lua not LUA" message
@@ -123,6 +134,152 @@ func (b *bot) isModerator(m *discordgo.Member) bool {
 		}
 	}
 	return false
+}
+
+type pchatInfo struct {
+	UserID string
+}
+
+func (b *bot) privateChatAction(s *discordgo.Session, m *discordgo.Message, parts []string) {
+	fmt.Println(strings.Join(parts, ","))
+	if parts[0] == "start" || parts[0] == "stop" || parts[0] == "archive" {
+		var info pchatInfo
+
+		channel, err := s.State.Channel(m.ChannelID)
+		if err != nil {
+			s.ChannelMessageSend(m.ChannelID, "ERROR: Could not load channel info: "+err.Error())
+			return
+		}
+
+		// Check parent
+		if channel.ParentID != pchatCategory {
+			s.ChannelMessageSend(m.ChannelID, "DENIED: This channel is not inside the p-chat category")
+			return
+		}
+
+		// Extract info from topic
+		{
+			list := strings.Split(channel.Topic, pChatInfoSeparator)
+			if len(list) != 2 {
+				s.ChannelMessageSend(m.ChannelID, "ERROR: Topic is malformed")
+				return
+			}
+
+			err := json.Unmarshal([]byte(list[1]), &info)
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, "ERROR: Topic is malformed")
+				return
+			}
+		}
+
+		// Ensure the dude exists
+		_, err = b.Member(m.GuildID, info.UserID)
+		if err != nil {
+			s.ChannelMessageSend(m.ChannelID, "ERROR: could not retrieve target user: "+err.Error())
+			return
+		}
+
+		if parts[0] == "start" {
+			aPerms, err := s.State.UserChannelPermissions(info.UserID, m.ChannelID)
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, "ERROR: Could not get target user channel permissions: "+err.Error())
+				return
+			}
+
+			dPerms := discordgo.PermissionReadMessageHistory
+			aPerms &= ^discordgo.PermissionReadMessageHistory
+			aPerms |= discordgo.PermissionSendMessages | discordgo.PermissionEmbedLinks | discordgo.PermissionAttachFiles
+
+			err = s.ChannelPermissionSet(m.ChannelID, info.UserID, "member", aPerms, dPerms)
+		} else if parts[0] == "stop" || parts[0] == "archive" {
+			err = s.ChannelPermissionDelete(m.ChannelID, info.UserID)
+		}
+
+		if err != nil {
+			s.ChannelMessageSend(m.ChannelID, "ERROR: Could not set target user channel permissions: "+err.Error())
+			return
+		}
+
+		if parts[0] == "archive" {
+			// Get position of archive channel
+			archiveCategory, err := b.Channel(m.GuildID, pchatCategory)
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, "ERROR: Could not get the archive category channel: "+err.Error())
+				return
+			}
+
+			channel.Position = archiveCategory.Position + 1
+			err = s.GuildChannelsReorder(m.GuildID, []*discordgo.Channel{channel})
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, "ERROR: Could not move this channel: "+err.Error())
+				return
+			}
+			s.ChannelMessageSend(m.ChannelID, "Done!")
+		}
+
+		return
+	}
+
+	targetUser := parts[1]
+	if len(targetUser) <= 3 || targetUser[:2] != "<@" || targetUser[len(targetUser)-1] != '>' {
+		return
+	}
+
+	targetUID := targetUser[2 : len(targetUser)-1]
+
+	target, err := b.Member(m.GuildID, targetUID)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "ERROR: Could not get target user guild member: "+err.Error())
+		return
+	}
+
+	info := pchatInfo{targetUID}
+	infoBytes, err := json.Marshal(info)
+	if err != nil {
+		panic(err)
+	}
+
+	channel, err := s.GuildChannelCreateComplex(m.GuildID, discordgo.GuildChannelCreateData{
+		Name:     target.User.Username + "-" + target.User.Discriminator,
+		Type:     discordgo.ChannelTypeGuildText,
+		Topic:    pChatInstructions + "\n\n\n" + pChatInfoSeparator + string(infoBytes),
+		ParentID: pchatCategory,
+		NSFW:     false,
+	})
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "ERROR: Could not create pchat channel: "+err.Error())
+		return
+	}
+
+	s.ChannelMessageSend(channel.ID, pChatInstructions)
+}
+
+func (b *bot) Member(guildID, userID string) (*discordgo.Member, error) {
+	m, err := b.discord.State.Member(guildID, userID)
+	if err == nil {
+		return m, nil
+	}
+
+	m, err = b.discord.GuildMember(guildID, userID)
+	if err == nil {
+		return m, nil
+	}
+
+	return nil, err
+}
+
+func (b *bot) Channel(guildID, channelID string) (*discordgo.Channel, error) {
+	m, err := b.discord.State.GuildChannel(guildID, channelID)
+	if err == nil {
+		return m, nil
+	}
+
+	m, err = b.discord.Channel(channelID)
+	if err == nil {
+		return m, nil
+	}
+
+	return nil, err
 }
 
 func (b *bot) muteAction(s *discordgo.Session, m *discordgo.Message, parts []string, shouldMute bool) {
@@ -219,4 +376,43 @@ func isModRole(role string) bool {
 
 func composeMessageURL(m *discordgo.Message) string {
 	return "https://discordapp.com/channels/" + m.GuildID + "/" + m.ChannelID + "/" + m.ID
+}
+
+func channelsRemove(slice []*discordgo.Channel, cid string) []*discordgo.Channel {
+	var i int
+	for index, v := range slice {
+		if v.ID == cid {
+			i = index
+			break
+		}
+	}
+
+	return append(slice[:i], slice[i+1:]...)
+}
+
+func channelsInsertAfter(s []*discordgo.Channel, after string, value *discordgo.Channel) []*discordgo.Channel {
+	var i int
+	for index, v := range s {
+		if v.ID == after {
+			i = index + 1
+			break
+		}
+	}
+
+	if len(s) == i {
+		return append(s, value)
+	}
+
+	s = append(s, nil)
+	copy(s[i+1:], s[i:])
+	s[i] = value
+	return s
+}
+
+func printChannels(chans []*discordgo.Channel) {
+	fmt.Println("channels: {")
+	for _, c := range chans {
+		fmt.Printf("\t%s @ %d (%s)\n", c.Name, c.Position, c.ID)
+	}
+	fmt.Println("}")
 }

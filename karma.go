@@ -12,6 +12,17 @@ import (
 
 var karmaRegexp = regexp.MustCompile(`^<@!?(\d+)>(\+\+|--)(?: (.*))?$`)
 
+func (b *bot) karmaGet(m *discordgo.Message, uid string) {
+	karma := b.karma.Get(uid)
+	member, err := b.Member(m.GuildID, uid)
+	if err != nil {
+		b.discord.ChannelMessageSend(m.ChannelID, "ERROR: Could not get target user name: "+err.Error())
+		return
+	}
+
+	b.discord.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s has %d karma", MemberName(member), karma))
+}
+
 func (b *bot) karmaAction(m *discordgo.Message, uid string, positive bool, reason string) {
 	// If performing action on self, make it negative
 	if uid == m.Author.ID {
@@ -41,6 +52,10 @@ func (b *bot) karmaAction(m *discordgo.Message, uid string, positive bool, reaso
 type karmaBox struct {
 	filename string
 	m        map[string]int
+}
+
+func (k *karmaBox) Get(user string) int {
+	return k.m[user]
 }
 
 func (k *karmaBox) Update(user string, add int) (newKarma int, err error) {

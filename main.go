@@ -129,6 +129,17 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 			return
 		}
 		b.privateChatAction(s, m.Message, parts[1:])
+		return
+	} else if parts[0] == "!karma" {
+		target := m.Author.ID
+		if len(parts) == 2 {
+			if !userRegexp.MatchString(parts[1]) {
+				return
+			}
+			target = userRegexp.FindStringSubmatch(parts[1])[1]
+		}
+		b.karmaGet(m.Message, target)
+		return
 	}
 
 	// If the message contains "LUA" reply with a "Lua not LUA" message

@@ -32,6 +32,7 @@ const pChatInstructions = "- Use `!pchat start` to invite the user to this chann
 
 // END_CONFIG
 
+var userRegexp = regexp.MustCompile(`<@!?(\d+)>`)
 var luaRegexp = regexp.MustCompile(`(\W)?LUA(\W)?`)
 
 const itsLuaMessage = `It's Lua, not LUA. https://www.lua.org/about.html
@@ -238,12 +239,12 @@ func (b *bot) privateChatAction(s *discordgo.Session, m *discordgo.Message, part
 		return
 	}
 
-	targetUser := parts[1]
-	if len(targetUser) <= 3 || targetUser[:2] != "<@" || targetUser[len(targetUser)-1] != '>' {
+	targetUser := parts[0]
+	if !userRegexp.MatchString(targetUser) {
 		return
 	}
 
-	targetUID := targetUser[2 : len(targetUser)-1]
+	targetUID := userRegexp.FindStringSubmatch(targetUser)[1]
 
 	target, err := b.Member(m.GuildID, targetUID)
 	if err != nil {
@@ -306,11 +307,11 @@ func (b *bot) muteAction(s *discordgo.Session, m *discordgo.Message, parts []str
 	}
 
 	targetUser := parts[1]
-	if len(targetUser) <= 3 || targetUser[:2] != "<@" || targetUser[len(targetUser)-1] != '>' {
+	if !userRegexp.MatchString(targetUser) {
 		return
 	}
 
-	targetUID := targetUser[2 : len(targetUser)-1]
+	targetUID := userRegexp.FindStringSubmatch(targetUser)[1]
 
 	reason := ""
 	if len(parts) > 2 {

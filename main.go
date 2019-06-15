@@ -218,7 +218,7 @@ func (b *bot) privateChatAction(s *discordgo.Session, m *discordgo.Message, part
 
 			dPerms := discordgo.PermissionReadMessageHistory
 			aPerms &= ^discordgo.PermissionReadMessageHistory
-			aPerms |= discordgo.PermissionSendMessages | discordgo.PermissionEmbedLinks | discordgo.PermissionAttachFiles
+			aPerms |= discordgo.PermissionReadMessages | discordgo.PermissionSendMessages | discordgo.PermissionEmbedLinks | discordgo.PermissionAttachFiles
 
 			err = s.ChannelPermissionSet(m.ChannelID, info.UserID, "member", aPerms, dPerms)
 		} else if parts[0] == "stop" || parts[0] == "archive" {

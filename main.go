@@ -32,6 +32,8 @@ const pChatInstructions = "- Use `!pchat start` to invite the user to this chann
 
 // END_CONFIG
 
+const okHandEmoji = "👌"
+
 var userRegexp = regexp.MustCompile(`<@!?(\d+)>`)
 var luaRegexp = regexp.MustCompile(`(\W)?LUA(\W)?`)
 
@@ -166,6 +168,14 @@ func (b *bot) isModerator(m *discordgo.Member) bool {
 	return false
 }
 
+// okHand sends an :ok_hand: emoji to the message
+func (b *bot) okHand(m *discordgo.Message) {
+	err := b.discord.MessageReactionAdd(m.ChannelID, m.ID, okHandEmoji)
+	if err != nil {
+		fmt.Printf("WARNING: could not add message reaction: %s\n", err)
+	}
+}
+
 type pchatInfo struct {
 	UserID string
 }
@@ -246,6 +256,8 @@ func (b *bot) privateChatAction(s *discordgo.Session, m *discordgo.Message, part
 			}
 			s.ChannelMessageSend(m.ChannelID, "Done!")
 		}
+
+		b.okHand(m)
 
 		return
 	}
@@ -384,10 +396,7 @@ func (b *bot) muteAction(s *discordgo.Session, m *discordgo.Message, parts []str
 		return
 	}
 
-	err = s.MessageReactionAdd(m.ChannelID, m.ID, "🆗")
-	if err != nil {
-		fmt.Printf("WARNING: could not add message reaction: %s\n", err)
-	}
+	b.okHand(m)
 
 	// Inform in modlog channel
 	url := composeMessageURL(m)

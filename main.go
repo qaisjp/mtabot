@@ -28,7 +28,9 @@ var modRoles = []string{
 const modLogChannel = "303958138489667584"
 
 const pChatInfoSeparator = "DO NOT MODIFY FROM THIS POINT ONWARDS:"
-const pChatInstructions = "- Use `!pchat start` to invite the user to this channel.\n- Use `!pchat stop` to remove the user.\n- Use `!pchat archive` to archive this chat. Ask an admin to unarchive."
+const pChatInstructions = "- Use `!pchat start` to invite the user to this channel." + `
+` + "- Use `!pchat stop` to remove the user." + `
+` + "- Use `!pchat archive` to archive this chat. Ask an admin to unarchive."
 
 // END_CONFIG
 

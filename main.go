@@ -37,7 +37,7 @@ const pChatInstructions = "- Use `!pchat start` to invite the user to this chann
 const okHandEmoji = "👌"
 
 var userRegexp = regexp.MustCompile(`<@!?(\d+)>`)
-var luaRegexp = regexp.MustCompile(`(\W)?LUA(\W)?`)
+var luaRegexp = regexp.MustCompile(`(^|\W)LUA($|\W)`)
 
 const itsLuaMessage = `It's Lua, not LUA. https://www.lua.org/about.html
 ` + "```" + `"Lua" (pronounced LOO-ah) means "Moon" in Portuguese. As such, it is neither an acronym nor an abbreviation, ` +

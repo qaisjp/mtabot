@@ -138,7 +138,7 @@ func (b *bot) checkMessageAttachments(s *discordgo.Session, m *discordgo.Message
 		},
 		Timestamp:   string(m.Timestamp),
 		Color:       0xffa500,
-		Title:       "A potentially malicious message has been sent.",
+		Title:       "A potentially malicious message has been sent",
 		Description: heuristicText + ": " + strings.Join(heuristics, ", "),
 		Fields: []*discordgo.MessageEmbedField{
 			{

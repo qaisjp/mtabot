@@ -108,7 +108,7 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 		return
 	}
 
-	fmt.Println(m.Content)
+	fmt.Printf("[%s] in %s by %s\t%s\n", m.Timestamp, m.ChannelID, m.Author.ID, m.Content)
 
 	// Ignore all messages created by the bot itself
 	// This isn't required in this specific example but it's a good practice.

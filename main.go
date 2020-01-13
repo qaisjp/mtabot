@@ -99,6 +99,11 @@ var mee6inform = map[string]int{
 }
 
 func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+	if m.GuildID == "" {
+		b.pchatPM(s, m.Message)
+		return
+	}
+
 	// Limit to MTA guild only
 	if m.GuildID != guild {
 		return
@@ -141,9 +146,6 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 		b.muteAction(s, m.Message, parts, shouldMute)
 		return
 	} else if parts[0] == "!pchat" {
-		if len(parts) == 1 {
-			return
-		}
 		b.privateChatAction(s, m.Message, parts[1:])
 		return
 	} else if parts[0] == "!karma" {

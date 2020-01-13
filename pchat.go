@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/pkg/errors"
 )
 
 const pChatInfoSeparator = "DO NOT MODIFY FROM THIS POINT ONWARDS:"
@@ -17,7 +18,23 @@ type pchatInfo struct {
 	UserID string
 }
 
+func (b *bot) pchatPM(s *discordgo.Session, m *discordgo.Message) {
+	// First ensure member is in the MTA guild
+	_, err := b.Member(guild, m.Author.ID)
+	if err != nil {
+		fmt.Printf("pchatPM error: %s\n", err.Error())
+		return
+	}
+}
+
 func (b *bot) privateChatAction(s *discordgo.Session, m *discordgo.Message, parts []string) {
+	if len(parts) == 0 {
+		if err := createPchatChannel(s, m.Author, true); err != nil {
+			fmt.Printf("[ERROR] failed to create pchat requested by user %s: %s", m.Author.ID, err.Error())
+		}
+		return
+	}
+
 	fmt.Println(strings.Join(parts, ","))
 	if parts[0] == "start" || parts[0] == "stop" {
 		var info pchatInfo
@@ -85,28 +102,35 @@ func (b *bot) privateChatAction(s *discordgo.Session, m *discordgo.Message, part
 		return
 	}
 
-	info := pchatInfo{targetUID}
+	if err := createPchatChannel(s, target.User, false); err != nil {
+		s.ChannelMessageSend(m.ChannelID, "ERROR: "+err.Error())
+	}
+}
+
+func createPchatChannel(s *discordgo.Session, user *discordgo.User, selfRequested bool) error {
+	info := pchatInfo{user.ID}
 	infoBytes, err := json.Marshal(info)
 	if err != nil {
 		panic(err)
 	}
 
-	channel, err := s.GuildChannelCreateComplex(m.GuildID, discordgo.GuildChannelCreateData{
-		Name:     target.User.Username + "-" + target.User.Discriminator,
+	channel, err := s.GuildChannelCreateComplex(guild, discordgo.GuildChannelCreateData{
+		Name:     user.Username + "-" + user.Discriminator,
 		Type:     discordgo.ChannelTypeGuildText,
 		Topic:    pChatInstructions + "\n\n\n" + pChatInfoSeparator + string(infoBytes),
 		ParentID: pchatCategory,
 		NSFW:     false,
 	})
 	if err != nil {
-		s.ChannelMessageSend(m.ChannelID, "ERROR: Could not create pchat channel: "+err.Error())
-		return
+		return errors.Wrap(err, "could not create pchat channel")
 	}
 
 	s.ChannelMessageSend(channel.ID, pChatInstructions)
+	s.ChannelMessageSend(channel.ID, fmt.Sprintf("@here, this room was self-requested by <@%s>.", user.ID))
 
 	err = s.ChannelPermissionSet(channel.ID, info.UserID, "member", discordgo.PermissionReadMessages, 0)
 	if err != nil {
 		s.ChannelMessageSend(channel.ID, "ERROR: could not give user read permission to channel: "+err.Error())
 	}
+	return nil
 }

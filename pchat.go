@@ -11,7 +11,8 @@ import (
 const pChatInfoSeparator = "DO NOT MODIFY FROM THIS POINT ONWARDS:"
 const pChatInstructions = "- Use `!pchat start` to re-invite the user to this channel." + `
 ` + "- Use `!pchat stop` to remove the user." + `
-` + "- Ask an admin to archive or unarchive."
+` + "- Ask an admin to archive or unarchive." + `
+` + "- The user has automatically been invited to this channel."
 
 type pchatInfo struct {
 	UserID string
@@ -57,17 +58,7 @@ func (b *bot) privateChatAction(s *discordgo.Session, m *discordgo.Message, part
 		}
 
 		if parts[0] == "start" {
-			aPerms, err := s.State.UserChannelPermissions(info.UserID, m.ChannelID)
-			if err != nil {
-				s.ChannelMessageSend(m.ChannelID, "ERROR: Could not get target user channel permissions: "+err.Error())
-				return
-			}
-
-			dPerms := discordgo.PermissionReadMessageHistory
-			aPerms &= ^discordgo.PermissionReadMessageHistory
-			aPerms |= discordgo.PermissionReadMessages | discordgo.PermissionSendMessages | discordgo.PermissionEmbedLinks | discordgo.PermissionAttachFiles
-
-			err = s.ChannelPermissionSet(m.ChannelID, info.UserID, "member", aPerms, dPerms)
+			err = s.ChannelPermissionSet(m.ChannelID, info.UserID, "member", discordgo.PermissionReadMessages, 0)
 		} else if parts[0] == "stop" || parts[0] == "archive" {
 			err = s.ChannelPermissionDelete(m.ChannelID, info.UserID)
 		}
@@ -131,4 +122,9 @@ func (b *bot) privateChatAction(s *discordgo.Session, m *discordgo.Message, part
 	}
 
 	s.ChannelMessageSend(channel.ID, pChatInstructions)
+
+	err = s.ChannelPermissionSet(channel.ID, info.UserID, "member", discordgo.PermissionReadMessages, 0)
+	if err != nil {
+		s.ChannelMessageSend(channel.ID, "ERROR: could not give user read permission to channel: "+err.Error())
+	}
 }

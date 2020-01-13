@@ -172,7 +172,7 @@ func createPchatChannel(s *discordgo.Session, user *discordgo.User, selfRequeste
 
 	s.ChannelMessageSend(channel.ID, pChatInstructions)
 	if selfRequested {
-		s.ChannelMessageSend(channel.ID, fmt.Sprintf("@h ere, this room was self-requested by <@%s>.", user.ID))
+		s.ChannelMessageSend(channel.ID, fmt.Sprintf("@here, this room was self-requested by <@%s>.", user.ID))
 	}
 
 	err = s.ChannelPermissionSet(channel.ID, info.UserID, "member", discordgo.PermissionReadMessages, 0)

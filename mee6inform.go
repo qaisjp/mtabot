@@ -54,18 +54,7 @@ func (b *bot) mee6inform(m *discordgo.Message, parts []string, msgIdx int) {
 	}
 	msg += " from Multi Theft Auto. Reason: " + strings.Join(parts[msgIdx:], " ")
 
-	ch, err := b.discord.UserChannelCreate(targetUID)
-	if err != nil {
-		b.discord.ChannelMessageSend(m.ChannelID, "ERROR: Could not create PM channel: "+err.Error())
-	}
-
-	_, err = b.discord.ChannelMessageSend(ch.ID, msg)
-	if err != nil {
-		b.discord.ChannelMessageSend(m.ChannelID, "ERROR: Could not send PM message: "+err.Error())
-	}
-
-	_, err = b.discord.ChannelDelete(ch.ID)
-	if err != nil {
-		b.discord.ChannelMessageSend(m.ChannelID, "ERROR: Could not delete PM channel: "+err.Error())
+	if err := b.sendQuickPM(targetUID, msg); err != nil {
+		b.discord.ChannelMessageSend(m.ChannelID, "ERROR: "+err.Error())
 	}
 }

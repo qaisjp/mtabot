@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/pkg/errors"
 )
 
 // CONFIG
@@ -193,4 +194,22 @@ func (b *bot) okHand(m *discordgo.Message) {
 	if err != nil {
 		fmt.Printf("WARNING: could not add message reaction: %s\n", err)
 	}
+}
+
+func (b *bot) sendQuickPM(user string, message string) (err error) {
+	ch, err := b.discord.UserChannelCreate(user)
+	if err != nil {
+		return errors.Wrap(err, "could not create PM channel")
+	}
+
+	_, err = b.discord.ChannelMessageSend(ch.ID, message)
+	if err != nil {
+		return errors.Wrap(err, "could not send PM message")
+	}
+
+	_, err = b.discord.ChannelDelete(ch.ID)
+	if err != nil {
+		return errors.Wrap(err, "could not delete PM channel")
+	}
+	return
 }

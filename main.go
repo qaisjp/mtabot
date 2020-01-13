@@ -28,11 +28,6 @@ const modLogChannel = "303958138489667584"
 const feedChannel = "486298246138953749"
 const privateChannelGroup = "360863453348626452"
 
-const pChatInfoSeparator = "DO NOT MODIFY FROM THIS POINT ONWARDS:"
-const pChatInstructions = "- Use `!pchat start` to invite the user to this channel." + `
-` + "- Use `!pchat stop` to remove the user." + `
-` + "- Ask an admin to archive or unarchive."
-
 // END_CONFIG
 
 const okHandEmoji = "👌"

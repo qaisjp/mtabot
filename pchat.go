@@ -8,6 +8,11 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+const pChatInfoSeparator = "DO NOT MODIFY FROM THIS POINT ONWARDS:"
+const pChatInstructions = "- Use `!pchat start` to re-invite the user to this channel." + `
+` + "- Use `!pchat stop` to remove the user." + `
+` + "- Ask an admin to archive or unarchive."
+
 type pchatInfo struct {
 	UserID string
 }

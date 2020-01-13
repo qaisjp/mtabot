@@ -11,7 +11,6 @@ import (
 const pChatInfoSeparator = "DO NOT MODIFY FROM THIS POINT ONWARDS:"
 const pChatInstructions = "- Use `!pchat start` to re-invite the user to this channel." + `
 ` + "- Use `!pchat stop` to remove the user." + `
-` + "- Ask an admin to archive or unarchive." + `
 ` + "- The user has automatically been invited to this channel."
 
 type pchatInfo struct {
@@ -20,7 +19,7 @@ type pchatInfo struct {
 
 func (b *bot) privateChatAction(s *discordgo.Session, m *discordgo.Message, parts []string) {
 	fmt.Println(strings.Join(parts, ","))
-	if parts[0] == "start" || parts[0] == "stop" || parts[0] == "archive" {
+	if parts[0] == "start" || parts[0] == "stop" {
 		var info pchatInfo
 
 		channel, err := s.State.Channel(m.ChannelID)
@@ -59,30 +58,13 @@ func (b *bot) privateChatAction(s *discordgo.Session, m *discordgo.Message, part
 
 		if parts[0] == "start" {
 			err = s.ChannelPermissionSet(m.ChannelID, info.UserID, "member", discordgo.PermissionReadMessages, 0)
-		} else if parts[0] == "stop" || parts[0] == "archive" {
+		} else if parts[0] == "stop" {
 			err = s.ChannelPermissionDelete(m.ChannelID, info.UserID)
 		}
 
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, "ERROR: Could not set target user channel permissions: "+err.Error())
 			return
-		}
-
-		if parts[0] == "archive" {
-			// Get position of archive channel
-			archiveCategory, err := b.Channel(m.GuildID, pchatCategory)
-			if err != nil {
-				s.ChannelMessageSend(m.ChannelID, "ERROR: Could not get the archive category channel: "+err.Error())
-				return
-			}
-
-			channel.Position = archiveCategory.Position + 1
-			err = s.GuildChannelsReorder(m.GuildID, []*discordgo.Channel{channel})
-			if err != nil {
-				s.ChannelMessageSend(m.ChannelID, "ERROR: Could not move this channel: "+err.Error())
-				return
-			}
-			s.ChannelMessageSend(m.ChannelID, "Done!")
 		}
 
 		b.okHand(m)

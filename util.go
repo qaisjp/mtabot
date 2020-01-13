@@ -77,3 +77,31 @@ func stripEveryone(guildID string, message string) string {
 	message = strings.ReplaceAll(message, "@here", "")
 	return message
 }
+
+func (b *bot) Member(guildID, userID string) (*discordgo.Member, error) {
+	m, err := b.discord.State.Member(guildID, userID)
+	if err == nil {
+		return m, nil
+	}
+
+	m, err = b.discord.GuildMember(guildID, userID)
+	if err == nil {
+		return m, nil
+	}
+
+	return nil, err
+}
+
+func (b *bot) Channel(guildID, channelID string) (*discordgo.Channel, error) {
+	m, err := b.discord.State.GuildChannel(guildID, channelID)
+	if err == nil {
+		return m, nil
+	}
+
+	m, err = b.discord.Channel(channelID)
+	if err == nil {
+		return m, nil
+	}
+
+	return nil, err
+}

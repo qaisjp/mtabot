@@ -47,10 +47,7 @@ func (b *bot) karmaAction(m *discordgo.Message, uid string, positive bool, reaso
 	}
 
 	// Strip @everyone
-	// reason = stripEveryone(m.GuildID, reason)
-	if reason != "" {
-		reason = "(reasons are off because of poor testing)"
-	}
+	reason = stripEveryone(m.GuildID, reason)
 
 	b.discord.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s now has %d karma %s", MemberName(member), new, reason))
 }

@@ -67,14 +67,10 @@ func MemberName(member *discordgo.Member) string {
 	return member.User.Username
 }
 
-func everyone(guildID string) string {
-	return "<@&" + guildID + ">"
-}
-
+// stripEveryone replaces @everyone and @here, as per https://git.io/Je1yi.
 func stripEveryone(guildID string, message string) string {
-	message = strings.ReplaceAll(message, everyone(guildID), "")
-	message = strings.ReplaceAll(message, "@everyone", "")
-	message = strings.ReplaceAll(message, "@here", "")
+	message = strings.ReplaceAll(message, "@everyone", "@\u200beveryone")
+	message = strings.ReplaceAll(message, "@here", "@\u200bhere")
 	return message
 }
 

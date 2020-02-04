@@ -159,6 +159,9 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 		}
 		b.karmaGet(m.Message, target)
 		return
+	} else if parts[0] == "!mod" || parts[0] == "!mods" {
+		b.requestMod(m.Message, parts[1:])
+		return
 	} else if idx, ok := mee6inform[parts[0]]; ok {
 		b.mee6inform(m.Message, parts, idx)
 		return

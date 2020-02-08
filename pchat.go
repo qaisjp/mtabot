@@ -84,7 +84,7 @@ func (b *bot) privateChatAction(s *discordgo.Session, m *discordgo.Message, part
 	}
 
 	fmt.Println(strings.Join(parts, ","))
-	if parts[0] == "start" || parts[0] == "stop" {
+	if parts[0] == "start" || parts[0] == "stop" || parts[0] == "archive" {
 		channel, err := s.State.Channel(m.ChannelID)
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, "ERROR: Could not load channel info: "+err.Error())
@@ -113,13 +113,23 @@ func (b *bot) privateChatAction(s *discordgo.Session, m *discordgo.Message, part
 
 		if parts[0] == "start" {
 			err = s.ChannelPermissionSet(m.ChannelID, info.UserID, "member", discordgo.PermissionReadMessages, 0)
-		} else if parts[0] == "stop" {
+		} else if parts[0] == "stop" || parts[0] == "archive" {
 			err = s.ChannelPermissionDelete(m.ChannelID, info.UserID)
 		}
 
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, "ERROR: Could not set target user channel permissions: "+err.Error())
 			return
+		}
+
+		if parts[0] == "archive" {
+			if _, err := s.ChannelEditComplex(m.ChannelID, &discordgo.ChannelEdit{
+				ParentID: archiveCategory,
+			}); err != nil {
+				s.ChannelMessageSend(m.ChannelID, "ERROR: Could not set parent ID: "+err.Error())
+				return
+			}
+
 		}
 
 		b.okHand(m)

@@ -48,7 +48,11 @@ const itsLuaMessage = `It's Lua, not LUA. https://www.lua.org/about.html
 type bot struct {
 	discord *discordgo.Session
 	karma   *karmaBox
+
+	commands map[string]GenericCommand
 }
+
+type Bot = bot
 
 func loadsec() func(*bot) {
 	secpath := os.Getenv("MTABOT_SECURITY_PLUGIN")
@@ -94,7 +98,11 @@ func main() {
 		panic(err)
 	}
 
-	bot := &bot{discord, karma}
+	bot := &bot{
+		discord:  discord,
+		karma:    karma,
+		commands: make(map[string]GenericCommand),
+	}
 
 	discord.AddHandler(bot.onMessageCreate)
 
@@ -129,6 +137,22 @@ var mee6inform = map[string]int{
 	"!ban":     2,
 	"!tempban": 3,
 	"!kick":    2,
+}
+
+type GenericCommand func(cmd string, s *discordgo.Session, m *discordgo.Message, parts []string) bool
+
+func (b *bot) AddCommand(cmd string, fn GenericCommand) bool {
+	if fn == nil {
+		panic("I've been passed a bloody nil func")
+	}
+
+	_, exists := b.commands[cmd]
+	if exists {
+		return false
+	}
+
+	b.commands[cmd] = fn
+	return true
 }
 
 func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -173,6 +197,14 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 	}
 
 	parts := strings.Split(m.Content, " ")
+
+	if strings.HasPrefix(parts[0], "!") {
+		cmd := parts[0][1:]
+		fn, ok := b.commands[cmd]
+		if ok && fn(cmd, s, m.Message, parts) {
+			return
+		}
+	}
 
 	if parts[0] == "!cmute" || parts[0] == "!cunmute" {
 		shouldMute := parts[0] == "!cmute"

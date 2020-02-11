@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/signal"
+	"plugin"
 	"regexp"
 	"strings"
 	"syscall"
@@ -49,11 +50,38 @@ type bot struct {
 	karma   *karmaBox
 }
 
+func loadsec() func(*bot) {
+	secpath := os.Getenv("MTABOT_SECURITY_PLUGIN")
+	if secpath == "" {
+		return nil
+	}
+
+	var err error
+	secplugin, err := plugin.Open(secpath)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fnLookup, err := secplugin.Lookup("Load")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fnP, ok := fnLookup.(*func(*bot))
+	if !ok {
+		panic("could not load Load function for security plugin")
+	}
+
+	return *fnP
+}
+
 func main() {
 	tokenBytes, err := ioutil.ReadFile("token.txt")
 	if err != nil {
 		panic(err)
 	}
+
+	secFn := loadsec()
 
 	discord, err := discordgo.New("Bot " + strings.TrimSpace(string(tokenBytes)))
 	if err != nil {
@@ -66,7 +94,7 @@ func main() {
 		panic(err)
 	}
 
-	bot := bot{discord, karma}
+	bot := &bot{discord, karma}
 
 	discord.AddHandler(bot.onMessageCreate)
 
@@ -80,6 +108,10 @@ func main() {
 	resp, err := discord.GatewayBot()
 	if err != nil {
 		panic(err)
+	}
+
+	if secFn != nil {
+		secFn(bot)
 	}
 
 	// Wait here until CTRL-C or other term signal is received.

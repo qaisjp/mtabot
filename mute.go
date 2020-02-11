@@ -36,7 +36,7 @@ func (b *bot) muteAction(s *discordgo.Session, m *discordgo.Message, parts []str
 			fmt.Printf("WARNING: could not add message reaction: %s\n", err)
 		}
 		return
-	} else if !b.isModerator(source) {
+	} else if !b.IsModerator(source) {
 		fmt.Printf("Non elevated user <@%s> (%s#%s) attempted to use elevated command\n", m.Author.ID, m.Author.Username, m.Author.Discriminator)
 		return
 	}

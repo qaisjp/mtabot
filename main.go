@@ -239,14 +239,14 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 
 // canAction tests if the source user can perform that action against that user
 func (b *bot) canAction(source, target *discordgo.Member) bool {
-	if b.isModerator(target) {
+	if b.IsModerator(target) {
 		return false
 	}
-	return b.isModerator(source)
+	return b.IsModerator(source)
 }
 
-// isModerator tests to see if that user is an "approved" role
-func (b *bot) isModerator(m *discordgo.Member) bool {
+// IsModerator tests to see if that user is an "approved" role
+func (b *bot) IsModerator(m *discordgo.Member) bool {
 	for _, role := range m.Roles {
 		if isModRole(role) {
 			return true

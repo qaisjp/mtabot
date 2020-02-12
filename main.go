@@ -127,7 +127,7 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 		cmd := parts[0][1:]
 		fn, ok := b.commands[cmd]
 		if ok {
-			fn(cmd, s, m.Message, parts)
+			fn(cmd, s, m.Message, parts[1:])
 			return
 		}
 	}

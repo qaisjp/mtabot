@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -155,10 +156,15 @@ func (i *banitem) toEmbed() *discordgo.MessageEmbed {
 		}
 	}
 
+	note := i.Note
+	if strings.Contains(note, "[auto]") {
+		note = "[auto]"
+	}
+
 	e := &discordgo.MessageEmbed{
 		Title: i.Serial,
 		Fields: []*discordgo.MessageEmbedField{
-			{Name: "Note", Value: i.Note},
+			{Name: "Note (**do not share with user**)", Value: note},
 			{Name: "End date", Value: endDate},
 			{Name: "Status", Value: status},
 			{Name: "Creation date", Value: i.CreatedAt.Format(time.RFC1123Z)},

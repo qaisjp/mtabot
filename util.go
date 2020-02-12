@@ -101,3 +101,12 @@ func (b *bot) Channel(guildID, channelID string) (*discordgo.Channel, error) {
 
 	return nil, err
 }
+
+func (b *bot) IsPrivateChannel(guildID, channelID string) (bool, error) {
+	c, err := b.Channel(guildID, channelID)
+	if err != nil {
+		return false, err
+	}
+
+	return c.ParentID == privateChannelGroup, nil
+}

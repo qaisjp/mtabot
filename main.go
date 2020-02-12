@@ -139,7 +139,7 @@ var mee6inform = map[string]int{
 	"!kick":    2,
 }
 
-type GenericCommand func(cmd string, s *discordgo.Session, m *discordgo.Message, parts []string) bool
+type GenericCommand func(cmd string, s *discordgo.Session, m *discordgo.Message, parts []string)
 
 func (b *bot) AddCommand(cmd string, fn GenericCommand) bool {
 	if fn == nil {
@@ -201,7 +201,8 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 	if strings.HasPrefix(parts[0], "!") {
 		cmd := parts[0][1:]
 		fn, ok := b.commands[cmd]
-		if ok && fn(cmd, s, m.Message, parts) {
+		if ok {
+			fn(cmd, s, m.Message, parts)
 			return
 		}
 	}

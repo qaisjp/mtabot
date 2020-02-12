@@ -165,9 +165,8 @@ func (i *banitem) toEmbed() *discordgo.MessageEmbed {
 		Title: i.Serial,
 		Fields: []*discordgo.MessageEmbedField{
 			{Name: "Note (**do not share with user**)", Value: note},
-			{Name: "End date", Value: endDate},
 			{Name: "Status", Value: status},
-			{Name: "Creation date", Value: i.CreatedAt.Format(time.RFC1123Z)},
+			{Name: "Created at", Value: i.CreatedAt.Format(time.RFC1123Z)},
 		},
 	}
 
@@ -176,6 +175,8 @@ func (i *banitem) toEmbed() *discordgo.MessageEmbed {
 			Name: "Updated at", Value: i.UpdatedAt.Format(time.RFC1123Z),
 		})
 	}
+
+	e.Fields = append(e.Fields, &discordgo.MessageEmbedField{Name: "Expires at", Value: endDate})
 
 	return e
 }

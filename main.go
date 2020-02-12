@@ -1,14 +1,9 @@
-package main
+package mtabot
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
-	"os/signal"
-	"plugin"
 	"regexp"
 	"strings"
-	"syscall"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/pkg/errors"
@@ -45,92 +40,22 @@ const itsLuaMessage = `It's Lua, not LUA. https://www.lua.org/about.html
 	`with different meanings for different people. So, please, write "Lua" right!
 ` + "```"
 
-type bot struct {
+type Bot struct {
 	discord *discordgo.Session
-	karma   *karmaBox
+	Karma   *karmaBox
 
 	commands map[string]GenericCommand
 }
 
-type Bot = bot
+type bot = Bot
 
-func loadsec() func(*bot) {
-	secpath := os.Getenv("MTABOT_SECURITY_PLUGIN")
-	if secpath == "" {
-		return nil
-	}
-
-	var err error
-	secplugin, err := plugin.Open(secpath)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	fnLookup, err := secplugin.Lookup("Load")
-	if err != nil {
-		panic(err.Error())
-	}
-
-	fnP, ok := fnLookup.(*func(*bot))
-	if !ok {
-		panic("could not load Load function for security plugin")
-	}
-
-	return *fnP
-}
-
-func main() {
-	tokenBytes, err := ioutil.ReadFile("token.txt")
-	if err != nil {
-		panic(err)
-	}
-
-	secFn := loadsec()
-
-	discord, err := discordgo.New("Bot " + strings.TrimSpace(string(tokenBytes)))
-	if err != nil {
-		panic(err)
-	}
-	discord.StateEnabled = true
-
-	karma, err := newKarmaBox("karma.json")
-	if err != nil {
-		panic(err)
-	}
-
-	bot := &bot{
+func NewBot(discord *discordgo.Session) *Bot {
+	bot := &Bot{
 		discord:  discord,
-		karma:    karma,
 		commands: make(map[string]GenericCommand),
 	}
-
 	discord.AddHandler(bot.onMessageCreate)
-
-	// Open a websocket connection to Discord and begin listening.
-	err = discord.Open()
-	if err != nil {
-		fmt.Println("error opening connection,", err)
-		return
-	}
-
-	resp, err := discord.GatewayBot()
-	if err != nil {
-		panic(err)
-	}
-
-	if secFn != nil {
-		secFn(bot)
-	}
-
-	// Wait here until CTRL-C or other term signal is received.
-	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
-	fmt.Printf("Gateway: %s\nRecommended number of shards: %d\n", resp.URL, resp.Shards)
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
-	<-sc
-
-	// Cleanly close down the Discord session.
-	discord.Close()
+	return bot
 }
 
 var mee6inform = map[string]int{

@@ -1,4 +1,4 @@
-package main
+package mtabot
 
 import (
 	"encoding/json"
@@ -13,7 +13,7 @@ import (
 var karmaRegexp = regexp.MustCompile(`^<@!?(\d+)> ?(\+\+|--)(?: (.*))?$`)
 
 func (b *bot) karmaGet(m *discordgo.Message, uid string) {
-	karma := b.karma.Get(uid)
+	karma := b.Karma.Get(uid)
 	member, err := b.Member(m.GuildID, uid)
 	if err != nil {
 		b.discord.ChannelMessageSend(m.ChannelID, "ERROR: Could not get target user name: "+err.Error())
@@ -34,7 +34,7 @@ func (b *bot) karmaAction(m *discordgo.Message, uid string, positive bool, reaso
 		add = -1
 	}
 
-	new, err := b.karma.Update(uid, add)
+	new, err := b.Karma.Update(uid, add)
 	if err != nil {
 		b.discord.ChannelMessageSend(m.ChannelID, "ERROR: Could not update karma: "+err.Error())
 		return
@@ -78,7 +78,7 @@ func (k *karmaBox) Save() error {
 	return ioutil.WriteFile(k.filename, b, 0644)
 }
 
-func newKarmaBox(filename string) (*karmaBox, error) {
+func NewKarmaBox(filename string) (*karmaBox, error) {
 	box := karmaBox{filename: filename}
 
 	b := []byte("{}")

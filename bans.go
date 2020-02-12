@@ -161,14 +161,13 @@ func (i *banitem) toEmbed() *discordgo.MessageEmbed {
 		note = "[auto]"
 	}
 
-	reasonName := "Reason (**[private](" + `https://discordapp.com/channels/278474088903606273/307874986721542144/677102248848785418` + ")**)"
-
 	e := &discordgo.MessageEmbed{
-		Title: i.Serial,
+		Description: "[Avoid sharing private information with users](https://discordapp.com/channels/278474088903606273/307874986721542144/677102248848785418)",
+		Title:       i.Serial,
 		Fields: []*discordgo.MessageEmbedField{
-			{Name: "Note (**public**)", Value: note},
+			{Name: "Note (**private**)", Value: note},
 			{Name: "Status", Value: status, Inline: true},
-			{Name: reasonName, Value: i.Reason, Inline: true},
+			{Name: "Reason", Value: i.Reason, Inline: true},
 			{Name: "Created at", Value: i.CreatedAt.Format(time.RFC1123Z)},
 		},
 	}

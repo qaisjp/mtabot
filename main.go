@@ -181,6 +181,14 @@ func (b *bot) IsModerator(m *discordgo.Member) bool {
 	return false
 }
 
+func (b *bot) IsUserModerator(guild string, user string) bool {
+	m, err := b.discord.State.Member(guild, user)
+	if err != nil || m == nil {
+		return false
+	}
+	return b.IsModerator(m)
+}
+
 // okHand sends an :ok_hand: emoji to the message
 func (b *bot) okHand(m *discordgo.Message) {
 	err := b.discord.MessageReactionAdd(m.ChannelID, m.ID, okHandEmoji)

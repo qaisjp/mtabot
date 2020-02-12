@@ -115,7 +115,7 @@ func banitemFromInterface(data []interface{}) *banitem {
 		item.CreatedAt = &t
 
 		if str := data[4].(string); str != "" {
-			t, err = time.Parse("2006-01-02 15:04:05", str)
+			t, err := time.Parse("2006-01-02 15:04:05", str)
 			if err != nil {
 				fmt.Printf("could not parse updated_at, %#v\n", data[4])
 				return nil
@@ -127,7 +127,7 @@ func banitemFromInterface(data []interface{}) *banitem {
 			if str == "0000-00-00 00:00:00" {
 				item.ExpiredAt = &time.Time{}
 			} else {
-				t, err = time.Parse("2006-01-02 15:04:05", str)
+				t, err := time.Parse("2006-01-02 15:04:05", str)
 				if err != nil {
 					fmt.Printf("could not parse expired_at, %#v\n", data[8])
 					item.ExpiredAt = &time.Time{}

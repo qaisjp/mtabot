@@ -68,7 +68,7 @@ func (b *bot) checkserial(cmd string, s *discordgo.Session, m *discordgo.Message
 
 	for i, embed := range embeds {
 		if len(embeds) > 1 {
-			embed.Author = &discordgo.MessageEmbedAuthor{Name: fmt.Sprintf("%02d of %02d", i, len(embeds))}
+			embed.Author = &discordgo.MessageEmbedAuthor{Name: fmt.Sprintf("%02d of %02d", i+1, len(embeds))}
 		}
 		embed.Footer = footer
 		embed.Timestamp = nowTimestamp

@@ -122,6 +122,9 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 	}
 
 	parts := strings.Fields(m.Content)
+	if len(parts) == 0 {
+		return
+	}
 
 	if strings.HasPrefix(parts[0], "!") {
 		cmd := parts[0][1:]

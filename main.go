@@ -121,7 +121,7 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 		b.karmaAction(m.Message, uid, positive, reason)
 	}
 
-	parts := strings.Split(m.Content, " ")
+	parts := strings.Fields(m.Content)
 
 	if strings.HasPrefix(parts[0], "!") {
 		cmd := parts[0][1:]

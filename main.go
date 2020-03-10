@@ -55,6 +55,7 @@ func NewBot(discord *discordgo.Session) *Bot {
 		commands: make(map[string]GenericCommand),
 	}
 	discord.AddHandler(bot.onMessageCreate)
+	bot.AddCommand("topic", b.cmdTopic)
 	return bot
 }
 

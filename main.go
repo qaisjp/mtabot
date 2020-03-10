@@ -50,13 +50,13 @@ type Bot struct {
 type bot = Bot
 
 func NewBot(discord *discordgo.Session) *Bot {
-	bot := &Bot{
+	b := &Bot{
 		discord:  discord,
 		commands: make(map[string]GenericCommand),
 	}
-	discord.AddHandler(bot.onMessageCreate)
-	bot.AddCommand("topic", b.cmdTopic)
-	return bot
+	discord.AddHandler(b.onMessageCreate)
+	b.AddCommand("topic", b.cmdTopic)
+	return b
 }
 
 var mee6inform = map[string]int{

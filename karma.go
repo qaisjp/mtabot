@@ -6,11 +6,56 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 var karmaRegexp = regexp.MustCompile(`^<@!?(\d+)> ?(\+\+|--)(?: (.*))?$`)
+
+func (b *bot) cmdKarma(cmd string, s *discordgo.Session, m *discordgo.Message, parts []string) {
+	target := m.Author.ID
+	if len(parts) > 0 {
+		if !userRegexp.MatchString(parts[0]) {
+			return
+		}
+		target = userRegexp.FindStringSubmatch(parts[0])[1]
+	}
+
+	if len(parts) <= 1 {
+		b.karmaGet(m, target)
+		return
+	}
+
+	// Ignore command if more than 2
+	if len(parts) > 2 {
+		return
+	}
+
+	numStr := parts[1]
+	relative := strings.HasPrefix(numStr, "r")
+	if relative {
+		numStr = numStr[1:]
+	}
+
+	new, err := strconv.Atoi(numStr)
+	if err != nil {
+		return
+	}
+
+	if relative {
+		new += b.Karma.Get(target)
+	}
+
+	_, err = b.Karma.Set(target, new)
+	if err != nil {
+		b.discord.ChannelMessageSend(m.ChannelID, "ERROR: Could not update karma: "+err.Error())
+		return
+	}
+
+	b.karmaGet(m, target)
+}
 
 func (b *bot) karmaGet(m *discordgo.Message, uid string) {
 	karma := b.Karma.Get(uid)
@@ -34,7 +79,7 @@ func (b *bot) karmaAction(m *discordgo.Message, uid string, positive bool, reaso
 		add = -1
 	}
 
-	new, err := b.Karma.Update(uid, add)
+	new, err := b.Karma.Set(uid, b.Karma.Get(uid)+add)
 	if err != nil {
 		b.discord.ChannelMessageSend(m.ChannelID, "ERROR: Could not update karma: "+err.Error())
 		return
@@ -61,8 +106,8 @@ func (k *karmaBox) Get(user string) int {
 	return k.m[user]
 }
 
-func (k *karmaBox) Update(user string, add int) (newKarma int, err error) {
-	k.m[user] = k.m[user] + add
+func (k *karmaBox) Set(user string, new int) (newKarma int, err error) {
+	k.m[user] = new
 	if err := k.Save(); err != nil {
 		return 0, err
 	}

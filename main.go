@@ -56,6 +56,7 @@ func NewBot(discord *discordgo.Session) *Bot {
 	}
 	discord.AddHandler(b.onMessageCreate)
 	b.AddCommand("topic", b.cmdTopic)
+	b.AddCommand("karma", b.cmdKarma)
 	return b
 }
 
@@ -142,16 +143,6 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 		return
 	} else if parts[0] == "!pchat" {
 		b.privateChatAction(s, m.Message, parts[1:])
-		return
-	} else if parts[0] == "!karma" {
-		target := m.Author.ID
-		if len(parts) == 2 {
-			if !userRegexp.MatchString(parts[1]) {
-				return
-			}
-			target = userRegexp.FindStringSubmatch(parts[1])[1]
-		}
-		b.karmaGet(m.Message, target)
 		return
 	} else if parts[0] == "!mod" || parts[0] == "!mods" {
 		b.requestMod(m.Message, parts[1:])

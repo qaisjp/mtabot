@@ -16,9 +16,15 @@ const pchatCategory = "584767048035467304"
 const archiveCategory = "584765668470161408"
 
 var modRoles = []string{
-	"278474612755398667", // mta team
 	"278932343828381696", // administrators
-	"283590599808909332", // moderators
+	"283590599808909332", // staff
+	"584757327047950378", // retired mod
+	"584817557492465674", // retired mta team
+}
+
+var adminRoles = []string{
+	"278932343828381696", // administrators
+	"584817557492465674", // retired mta team
 }
 
 const modLogChannel = "303958138489667584"
@@ -164,24 +170,6 @@ func (b *bot) canAction(source, target *discordgo.Member) bool {
 		return false
 	}
 	return b.IsModerator(source)
-}
-
-// IsModerator tests to see if that user is an "approved" role
-func (b *bot) IsModerator(m *discordgo.Member) bool {
-	for _, role := range m.Roles {
-		if isModRole(role) {
-			return true
-		}
-	}
-	return false
-}
-
-func (b *bot) IsUserModerator(guild string, user string) bool {
-	m, err := b.discord.State.Member(guild, user)
-	if err != nil || m == nil {
-		return false
-	}
-	return b.IsModerator(m)
 }
 
 // okHand sends an :ok_hand: emoji to the message

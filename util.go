@@ -7,9 +7,9 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func isModRole(role string) bool {
-	for _, s := range modRoles {
-		if s == role {
+func strSliceContains(slice []string, needle string) bool {
+	for _, s := range slice {
+		if s == needle {
 			return true
 		}
 	}

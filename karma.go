@@ -33,6 +33,11 @@ func (b *bot) cmdKarma(cmd string, s *discordgo.Session, m *discordgo.Message, p
 		return
 	}
 
+	// Ignore command if author is not an admin
+	if !b.IsUserAdmin(m.GuildID, m.Author.ID) {
+		return
+	}
+
 	numStr := parts[1]
 	relative := strings.HasPrefix(numStr, "r")
 	if relative {

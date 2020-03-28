@@ -61,13 +61,11 @@ func NewBot(discord *discordgo.Session) *Bot {
 		commands: make(map[string]GenericCommand),
 	}
 	discord.AddHandler(b.onMessageCreate)
-	b.AddCommand("topic", b.cmdTopic)
-	b.AddCommand("karma", b.cmdKarma)
-	b.AddCommand("pchat", b.cmdPchat)
-	b.AddCommand("cmute", b.cmdMute)
-	b.AddCommand("cunmute", b.cmdMute)
-	b.AddCommand("mod", b.cmdModPing)
-	b.AddCommand("mods", b.cmdModPing)
+	b.AddCommand(b.cmdTopic, "topic")
+	b.AddCommand(b.cmdKarma, "karma")
+	b.AddCommand(b.cmdPchat, "pchat")
+	b.AddCommand(b.cmdMute, "cmute", "cunmute")
+	b.AddCommand(b.cmdModPing, "mod", "mods")
 	return b
 }
 
@@ -79,17 +77,19 @@ var mee6inform = map[string]int{
 
 type GenericCommand func(cmd string, s *discordgo.Session, m *discordgo.Message, parts []string)
 
-func (b *bot) AddCommand(cmd string, fn GenericCommand) bool {
+func (b *bot) AddCommand(fn GenericCommand, cmds ...string) bool {
 	if fn == nil {
 		panic("I've been passed a bloody nil func")
 	}
 
-	_, exists := b.commands[cmd]
-	if exists {
-		return false
-	}
+	for _, cmd := range cmds {
+		_, exists := b.commands[cmd]
+		if exists {
+			return false
+		}
 
-	b.commands[cmd] = fn
+		b.commands[cmd] = fn
+	}
 	return true
 }
 

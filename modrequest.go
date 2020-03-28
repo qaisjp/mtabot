@@ -10,7 +10,7 @@ import (
 const modRequest = "<@%s> requested a moderator in <#%s> here: %s\nReason: %s"
 const requestRecv = "Your request was received <@%s>, a moderator will review and report back soon."
 
-func (b *bot) requestMod(m *discordgo.Message, parts []string) {
+func (b *bot) cmdModPing(cmd string, s *discordgo.Session, m *discordgo.Message, parts []string) {
 	url := composeMessageURL(m)
 
 	message := "No message provided."

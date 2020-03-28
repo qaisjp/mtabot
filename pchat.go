@@ -62,7 +62,7 @@ func pchatExtractTopicInfo(topic string) (info pchatInfo, err error) {
 	return
 }
 
-func (b *bot) privateChatAction(s *discordgo.Session, m *discordgo.Message, parts []string) {
+func (b *bot) cmdPchat(cmd string, s *discordgo.Session, m *discordgo.Message, parts []string) {
 	if len(parts) == 0 {
 		ch, err := b.findUserPchat(m.Author.ID)
 		if err != nil && err != errNoUserPchat {
@@ -83,7 +83,6 @@ func (b *bot) privateChatAction(s *discordgo.Session, m *discordgo.Message, part
 		return
 	}
 
-	fmt.Println(strings.Join(parts, ","))
 	if parts[0] == "start" || parts[0] == "stop" || parts[0] == "archive" {
 		channel, err := s.State.Channel(m.ChannelID)
 		if err != nil {

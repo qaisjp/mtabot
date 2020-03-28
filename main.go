@@ -63,6 +63,11 @@ func NewBot(discord *discordgo.Session) *Bot {
 	discord.AddHandler(b.onMessageCreate)
 	b.AddCommand("topic", b.cmdTopic)
 	b.AddCommand("karma", b.cmdKarma)
+	b.AddCommand("pchat", b.cmdPchat)
+	b.AddCommand("cmute", b.cmdMute)
+	b.AddCommand("cunmute", b.cmdMute)
+	b.AddCommand("mod", b.cmdModPing)
+	b.AddCommand("mods", b.cmdModPing)
 	return b
 }
 
@@ -143,17 +148,7 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 		}
 	}
 
-	if parts[0] == "!cmute" || parts[0] == "!cunmute" {
-		shouldMute := parts[0] == "!cmute"
-		b.muteAction(s, m.Message, parts, shouldMute)
-		return
-	} else if parts[0] == "!pchat" {
-		b.privateChatAction(s, m.Message, parts[1:])
-		return
-	} else if parts[0] == "!mod" || parts[0] == "!mods" {
-		b.requestMod(m.Message, parts[1:])
-		return
-	} else if idx, ok := mee6inform[parts[0]]; ok {
+	if idx, ok := mee6inform[parts[0]]; ok {
 		b.mee6inform(m.Message, parts, idx)
 		return
 	}

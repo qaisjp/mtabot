@@ -7,12 +7,13 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func (b *bot) muteAction(s *discordgo.Session, m *discordgo.Message, parts []string, shouldMute bool) {
+func (b *bot) cmdMute(cmd string, s *discordgo.Session, m *discordgo.Message, parts []string) {
+	shouldMute := cmd == "cmute"
 	if len(parts) < 2 {
 		return
 	}
 
-	targetUser := parts[1]
+	targetUser := parts[0]
 	if !userRegexp.MatchString(targetUser) {
 		return
 	}
@@ -20,8 +21,8 @@ func (b *bot) muteAction(s *discordgo.Session, m *discordgo.Message, parts []str
 	targetUID := userRegexp.FindStringSubmatch(targetUser)[1]
 
 	reason := ""
-	if len(parts) > 2 {
-		reason = strings.Join(parts[2:], " ")
+	if len(parts) > 1 {
+		reason = strings.Join(parts[1:], " ")
 	}
 
 	source, err := s.State.Member(m.GuildID, m.Author.ID)

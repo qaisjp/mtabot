@@ -179,7 +179,7 @@ func (i *banitem) toEmbed() *discordgo.MessageEmbed {
 
 	e := &discordgo.MessageEmbed{
 		Description: "[Avoid sharing private information with users](https://discordapp.com/channels/278474088903606273/307874986721542144/677102248848785418)",
-		Title:       i.Serial,
+		Title:       fmt.Sprintf("%d: %s", i.ID, i.Serial),
 		Fields: []*discordgo.MessageEmbedField{
 			{Name: "Note (**private**)", Value: note},
 			{Name: "Reason", Value: i.Reason, Inline: true},

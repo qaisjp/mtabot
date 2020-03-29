@@ -28,6 +28,17 @@ type banitem struct {
 	HasEnd         bool       `json:"has_end"`
 	ExpiredAt      *time.Time `json:"endtime"`
 	AllowedServers string     `json:"allowed_servers"`
+
+	Archived bool `json:"-"`
+}
+
+func (i banitem) HasExpired() bool {
+	return i.ExpiredAt != nil && i.ExpiredAt.Before(time.Now())
+}
+
+func (i banitem) IsActive() bool {
+	// Enabled and not expired
+	return i.Enabled && !i.HasExpired()
 }
 
 type banitemjson struct {
@@ -142,9 +153,8 @@ func banitemFromInterface(data []interface{}) *banitem {
 }
 
 func (i *banitem) toEmbed() *discordgo.MessageEmbed {
-	hasExpired := i.ExpiredAt.Before(time.Now())
 	status := "Disabled"
-	if hasExpired {
+	if i.HasExpired() {
 		status = "Expired"
 		if !i.Enabled {
 			status = "~~Expired~~ Disabled"
@@ -185,6 +195,12 @@ func (i *banitem) toEmbed() *discordgo.MessageEmbed {
 	}
 
 	e.Fields = append(e.Fields, &discordgo.MessageEmbedField{Name: "Expires at", Value: endDate})
+
+	if i.IsActive() {
+		e.Color = 0xff0000
+	} else {
+		e.Color = 0x00ff00
+	}
 
 	return e
 }

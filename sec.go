@@ -62,6 +62,7 @@ func (b *bot) checkserial(cmd string, s *discordgo.Session, m *discordgo.Message
 			embeds = append(embeds, &discordgo.MessageEmbed{
 				Title:       serial,
 				Description: "This serial has no associated bans.",
+				Color:       0x777777,
 			})
 		}
 	}

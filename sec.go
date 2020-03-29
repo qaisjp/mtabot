@@ -11,6 +11,8 @@ import (
 	"github.com/multitheftauto/mtabot"
 )
 
+const emojiLoading = "⌛"
+
 func init() {
 	fmt.Println("Security module has been initialised")
 }
@@ -34,6 +36,10 @@ func (b *bot) checkserial(cmd string, s *discordgo.Session, m *discordgo.Message
 	if len(parts) == 0 {
 		fmt.Println("provide multiple serials pls")
 		return
+	}
+
+	if err := s.MessageReactionAdd(m.ChannelID, m.ID, emojiLoading); err != nil {
+		fmt.Printf("failed to add emoji: %s\n", err.Error())
 	}
 
 	fmt.Println("loading")
@@ -78,6 +84,8 @@ func (b *bot) checkserial(cmd string, s *discordgo.Session, m *discordgo.Message
 			fmt.Println("Message not sent", err.Error())
 		}
 	}
+
+	s.MessageReactionRemove(m.ChannelID, m.ID, emojiLoading, "@me")
 }
 
 func Load(b *mtabot.Bot) {

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/pkg/errors"
 )
 
 type banData struct {
@@ -51,11 +52,11 @@ type banjson struct {
 	Data     []banitemjson `json:"data"`
 }
 
-func getBanData() (*banData, error) {
-	req, err := http.NewRequest("GET", "***REMOVED***", nil)
+func (result *banData) importFromURL(url string) error {
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		fmt.Println("could not create request", err.Error())
-		return nil, err
+		return err
 	}
 	req.Header.Set("Authorization", "Basic "+os.Getenv("MTABOT_BASIC_AUTH"))
 
@@ -63,7 +64,7 @@ func getBanData() (*banData, error) {
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		fmt.Println("could not request data", err.Error())
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 	fmt.Println("downloaded")
@@ -71,34 +72,45 @@ func getBanData() (*banData, error) {
 	respBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("couldn't read response")
-		return nil, err
+		return err
 	}
 	fmt.Println("read all")
 
 	data := &banjson{}
 	if err := json.Unmarshal(respBytes, data); err != nil {
 		fmt.Println("could not unmarshal")
-		return nil, err
+		return err
 	}
 
 	fmt.Println("unmarshaled")
 
-	var items []*banitem
-	serialbans := make(map[string][]*banitem)
 	for _, row := range data.Data {
 		rowData := banitemFromInterface(row.Values)
 		if rowData != nil {
-			items = append(items, rowData)
-			serialbans[rowData.Serial] = append(serialbans[rowData.Serial], rowData)
+			result.items = append(result.items, rowData)
+			result.serialbans[rowData.Serial] = append(result.serialbans[rowData.Serial], rowData)
 		}
 	}
+	return nil
+}
 
-	return &banData{items, serialbans}, nil
+func getBanData() (*banData, error) {
+	result := &banData{nil, make(map[string][]*banitem)}
+	if err := result.importFromURL("***REMOVED***"); err != nil {
+		return nil, errors.Wrap(err, "archive")
+	}
+	for _, row := range result.items {
+		row.Archived = true
+	}
+	if err := result.importFromURL("***REMOVED***"); err != nil {
+		return nil, errors.Wrap(err, "non-archive")
+	}
+	return result, nil
 }
 
 func banitemFromInterface(data []interface{}) *banitem {
-	if len(data) != 11 {
-		fmt.Printf("data is bad length %#v\n", data)
+	if len(data) != 10 {
+		fmt.Printf("data is bad length %d - %#v\n", len(data), data)
 		return nil
 	}
 

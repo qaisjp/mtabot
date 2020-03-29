@@ -16,6 +16,7 @@ import (
 type banData struct {
 	items      []*banitem
 	serialbans map[string][]*banitem
+	repids     map[int]*banitem
 }
 
 type banitem struct {
@@ -89,13 +90,14 @@ func (result *banData) importFromURL(url string) error {
 		if rowData != nil {
 			result.items = append(result.items, rowData)
 			result.serialbans[rowData.Serial] = append(result.serialbans[rowData.Serial], rowData)
+			result.repids[rowData.ID] = rowData
 		}
 	}
 	return nil
 }
 
 func getBanData() (*banData, error) {
-	result := &banData{nil, make(map[string][]*banitem)}
+	result := &banData{nil, make(map[string][]*banitem), make(map[int]*banitem)}
 	if err := result.importFromURL("***REMOVED***"); err != nil {
 		return nil, errors.Wrap(err, "archive")
 	}

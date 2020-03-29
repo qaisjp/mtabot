@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -52,16 +53,34 @@ func (b *bot) checkserial(cmd string, s *discordgo.Session, m *discordgo.Message
 
 	var embeds []*discordgo.MessageEmbed
 	for _, serial := range parts {
-		serial = strings.ToUpper(serial)
-		bans := data.serialbans[serial]
-		for _, ban := range bans {
-			embeds = append(embeds, ban.toEmbed())
+		var bans []*banitem
+		var typ string
+		var description string
+
+		if len(serial) == 32 {
+			typ = "serial"
+			serial = strings.ToUpper(serial)
+			bans = data.serialbans[serial]
+		} else {
+			typ = "repid"
+			id, err := strconv.Atoi(serial)
+			if err != nil {
+				description = err.Error()
+			} else if ban, ok := data.repids[id]; ok {
+				bans = []*banitem{ban}
+			}
 		}
 
-		if len(bans) == 0 {
+		if description == "" && len(bans) == 0 {
+			description = "This " + typ + " has no associated bans."
+		} else if description == "" {
+			for _, ban := range bans {
+				embeds = append(embeds, ban.toEmbed())
+			}
+		} else {
 			embeds = append(embeds, &discordgo.MessageEmbed{
 				Title:       serial,
-				Description: "This serial has no associated bans.",
+				Description: description,
 				Color:       0x777777,
 			})
 		}

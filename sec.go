@@ -82,7 +82,7 @@ func (b *bot) checkserial(cmd string, s *discordgo.Session, m *discordgo.Message
 
 func Load(b *mtabot.Bot) {
 	bot := &bot{b}
-	b.AddCommand(mtabot.GenericCommand(bot.checkserial), "csdev")
+	b.AddCommand(bot.checkserial, "csdev")
 }
 
 // curl '' -H 'Connection: keep-alive' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'Authorization: Basic ***REMOVED***'

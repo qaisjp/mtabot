@@ -142,8 +142,14 @@ func banitemFromInterface(data []interface{}) *banitem {
 }
 
 func (i *banitem) toEmbed() *discordgo.MessageEmbed {
+	hasExpired := i.ExpiredAt.Before(time.Now())
 	status := "Disabled"
-	if i.Enabled {
+	if hasExpired {
+		status = "Expired"
+		if !i.Enabled {
+			status = "~~Expired~~ Disabled"
+		}
+	} else if i.Enabled {
 		status = "Enabled"
 	}
 
@@ -158,7 +164,7 @@ func (i *banitem) toEmbed() *discordgo.MessageEmbed {
 
 	note := i.Note
 	if strings.Contains(note, "[auto]") {
-		note = "[auto]"
+		note = "[auto] Ask anti-cheat team for details"
 	}
 
 	e := &discordgo.MessageEmbed{

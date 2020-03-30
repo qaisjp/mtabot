@@ -141,6 +141,10 @@ func (b *bot) cmdPchat(cmd string, s *discordgo.Session, m *discordgo.Message, p
 		return
 	}
 
+	if !b.IsUserModerator(m.GuildID, m.Author.ID) {
+		return
+	}
+
 	targetUID := userRegexp.FindStringSubmatch(targetUser)[1]
 
 	target, err := b.Member(m.GuildID, targetUID)

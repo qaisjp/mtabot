@@ -83,7 +83,11 @@ func (b *bot) cmdPchat(cmd string, s *discordgo.Session, m *discordgo.Message, p
 		return
 	}
 
-	if parts[0] == "start" || parts[0] == "stop" || parts[0] == "archive" {
+	shouldStart := parts[0] == "start" || parts[0] == "open"
+	shouldStop := parts[0] == "stop" || parts[0] == "close"
+	shouldArchive := parts[0] == "archive"
+
+	if shouldStart || shouldStop || shouldArchive {
 		channel, err := s.State.Channel(m.ChannelID)
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, "ERROR: Could not load channel info: "+err.Error())
@@ -105,20 +109,19 @@ func (b *bot) cmdPchat(cmd string, s *discordgo.Session, m *discordgo.Message, p
 
 		// Ensure the dude exists
 		_, err = b.Member(m.GuildID, info.UserID)
-		if err != nil {
-			s.ChannelMessageSend(m.ChannelID, "ERROR: could not retrieve target user: "+err.Error())
-			return
-		}
+		if err == nil {
+			if shouldStart {
+				err = s.ChannelPermissionSet(m.ChannelID, info.UserID, "member", discordgo.PermissionReadMessages, 0)
+			} else if shouldStop || shouldArchive {
+				err = s.ChannelPermissionDelete(m.ChannelID, info.UserID)
+			}
 
-		if parts[0] == "start" {
-			err = s.ChannelPermissionSet(m.ChannelID, info.UserID, "member", discordgo.PermissionReadMessages, 0)
-		} else if parts[0] == "stop" || parts[0] == "archive" {
-			err = s.ChannelPermissionDelete(m.ChannelID, info.UserID)
-		}
-
-		if err != nil {
-			s.ChannelMessageSend(m.ChannelID, "ERROR: Could not set target user channel permissions: "+err.Error())
-			return
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, "ERROR: Could not set target user channel permissions: "+err.Error())
+				return
+			}
+		} else if shouldStart {
+			s.ChannelMessageSend(m.ChannelID, "Btw that user has left the server... I think. "+err.Error())
 		}
 
 		if parts[0] == "archive" {
@@ -132,7 +135,6 @@ func (b *bot) cmdPchat(cmd string, s *discordgo.Session, m *discordgo.Message, p
 		}
 
 		b.okHand(m)
-
 		return
 	}
 

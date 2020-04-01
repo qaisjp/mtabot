@@ -73,7 +73,7 @@ func (b *bot) cmdPchat(cmd string, s *discordgo.Session, m *discordgo.Message, p
 			return
 		}
 
-		ch, err = createPchatChannel(s, m.Author, true)
+		ch, err = createPchatChannel(s, m.Author, m.Author)
 		if err != nil {
 			fmt.Printf("[ERROR] failed to create pchat requested by user %s: %s", m.Author.ID, err.Error())
 			return
@@ -155,7 +155,7 @@ func (b *bot) cmdPchat(cmd string, s *discordgo.Session, m *discordgo.Message, p
 		return
 	}
 
-	ch, err := createPchatChannel(s, target.User, false)
+	ch, err := createPchatChannel(s, target.User, m.Author)
 	if err != nil {
 		s.ChannelMessageSend(m.ChannelID, "ERROR: "+err.Error())
 		return
@@ -167,7 +167,7 @@ func (b *bot) cmdPchat(cmd string, s *discordgo.Session, m *discordgo.Message, p
 	}
 }
 
-func createPchatChannel(s *discordgo.Session, user *discordgo.User, selfRequested bool) (*discordgo.Channel, error) {
+func createPchatChannel(s *discordgo.Session, user *discordgo.User, requestedBy *discordgo.User) (*discordgo.Channel, error) {
 	info := pchatInfo{user.ID}
 	infoBytes, err := json.Marshal(info)
 	if err != nil {
@@ -186,14 +186,31 @@ func createPchatChannel(s *discordgo.Session, user *discordgo.User, selfRequeste
 	}
 
 	s.ChannelMessageSend(channel.ID, pChatInstructions)
-	if selfRequested {
-		s.ChannelMessageSend(channel.ID, fmt.Sprintf("@here, this room was self-requested by <@%s>.", user.ID))
-	}
 
 	err = s.ChannelPermissionSet(channel.ID, info.UserID, "member", discordgo.PermissionReadMessages, 0)
 	if err != nil {
 		s.ChannelMessageSend(channel.ID, "ERROR: could not give user read permission to channel: "+err.Error())
 	}
+
+	prefix := fmt.Sprintf("Hello <@%s>", user.ID)
+	if requestedBy.ID != user.ID {
+		prefix += fmt.Sprintf(", you've been invited by <@%s>", requestedBy.ID)
+	}
+
+	embed := discordgo.MessageEmbed{
+		Title: "IMPORTANT INFORMATION",
+		Description: prefix + `!
+
+If your question is related to:
+1. MTA not working properly or other computer problems, use <#278521065435824128>.
+2. scripting, use <#278520948347502592>, <#667822335125880835> or <#667822318743060490>.
+3. a PERMANENT global game ban, you can [appeal bans on the forum](https://forum.mtasa.com/forum/180-ban-appeals/).
+4. a TEMPORARY global game ban, you CANNOT appeal the ban. Type ` + "`!pchat stop`" + ` if you have been tempbanned.
+
+If you have any other question, please state your question and wait patiently for a response. Do not @mention staff.`,
+	}
+
+	s.ChannelMessageSendEmbed(channel.ID, &embed)
 
 	return channel, nil
 }

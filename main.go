@@ -148,11 +148,6 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 		}
 	}
 
-	if idx, ok := mee6inform[parts[0]]; ok {
-		b.mee6inform(m.Message, parts, idx)
-		return
-	}
-
 	// If the message contains "LUA" reply with a "Lua not LUA" message
 	if luaRegexp.Match([]byte(m.Content)) {
 		s.ChannelMessageSend(m.ChannelID, itsLuaMessage)

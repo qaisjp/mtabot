@@ -206,6 +206,8 @@ If your question is related to:
 2. scripting, use <#278520948347502592>, <#667822335125880835> or <#667822318743060490>.
 3. a PERMANENT global game ban, you can [appeal bans on the forum](https://forum.mtasa.com/forum/180-ban-appeals/).
 4. a TEMPORARY global game ban, you CANNOT appeal the ban. Type ` + "`!pchat stop`" + ` if you have been tempbanned.
+5. a complaint about server list abuse, log in on forum.mtasa.com and then [make a post here](https://forum.mtasa.com/forum/188-server-list-abuse-help/). You need to log in first.
+6. moving your server rank - we no longer provide the service of moving your server rank when your IP address changes
 
 If you have any other question, please state your question and wait patiently for a response. Do not @mention staff.`,
 	}

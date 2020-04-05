@@ -64,22 +64,6 @@ func pchatExtractTopicInfo(topic string) (info pchatInfo, err error) {
 
 func (b *bot) cmdPchat(cmd string, s *discordgo.Session, m *discordgo.Message, parts []string) {
 	if len(parts) == 0 {
-		ch, err := b.findUserPchat(m.Author.ID)
-		if err != nil && err != errNoUserPchat {
-			fmt.Printf("[ERROR] failed to check if pchat exists, self-requested by user %s: %s", m.Author.ID, err.Error())
-			return
-		} else if ch != nil {
-			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s>, you can visit your existing private chat here: <#%s>.", m.Author.ID, ch.ID))
-			return
-		}
-
-		ch, err = createPchatChannel(s, m.Author, m.Author)
-		if err != nil {
-			fmt.Printf("[ERROR] failed to create pchat requested by user %s: %s", m.Author.ID, err.Error())
-			return
-		}
-
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s>, you have been invited to <#%s>.", m.Author.ID, ch.ID))
 		return
 	}
 

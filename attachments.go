@@ -1,6 +1,7 @@
 package mtabot
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -34,8 +35,9 @@ func (b *bot) checkMessageAttachments(s *discordgo.Session, m *discordgo.Message
 		filenameText += "s"
 	}
 
+	link := fmt.Sprintf("[Click here to read the message](%s)\n", composeMessageURL(m.Message))
+
 	_, _ = s.ChannelMessageSendEmbed(feedChannel, &discordgo.MessageEmbed{
-		URL: composeMessageURL(m.Message),
 		Author: &discordgo.MessageEmbedAuthor{
 			Name:    m.Author.String(),
 			IconURL: m.Author.AvatarURL(""),
@@ -43,7 +45,7 @@ func (b *bot) checkMessageAttachments(s *discordgo.Session, m *discordgo.Message
 		Timestamp:   string(m.Timestamp),
 		Color:       0xffa500,
 		Title:       "A potentially malicious message has been sent",
-		Description: heuristicText + ": " + strings.Join(heuristics, ", "),
+		Description: link + heuristicText + ": " + strings.Join(heuristics, ", "),
 		Fields: []*discordgo.MessageEmbedField{
 			{
 				Name:   filenameText,

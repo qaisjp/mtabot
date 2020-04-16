@@ -139,6 +139,18 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 		return
 	}
 
+	if str := parts[0]; len(parts) == 1 && (strings.HasPrefix(str, "blue-") || strings.HasPrefix(str, "res-")) {
+		repo := "mtasa-blue"
+		prefix := "blue-"
+		if strings.HasPrefix(str, "res-") {
+			repo = "mtasa-resources"
+			prefix = "res-"
+		}
+		url := fmt.Sprintf("https://github.com/multitheftauto/%s/issues/%s", repo, strings.TrimPrefix(str, prefix))
+		s.ChannelMessageSend(m.ChannelID, url)
+		return
+	}
+
 	if strings.HasPrefix(parts[0], "!") {
 		cmd := parts[0][1:]
 		fn, ok := b.commands[cmd]

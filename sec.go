@@ -29,8 +29,8 @@ func (b *bot) checkserial(cmd string, s *discordgo.Session, m *discordgo.Message
 		return
 	}
 
-	if os.Getenv("MTABOT_BASIC_AUTH") == "" {
-		fmt.Println("MTABOT_BASIC_AUTH is missing")
+	if os.Getenv("MTABOT_BASIC_AUTH") == "" || os.Getenv("MTABOT_GLOBAL_BANS") == "" || os.Getenv("MTABOT_GLOBAL_BANS_ARCHIVE") == "" {
+		fmt.Println("MTABOT_BASIC_AUTH or MTABOT_GLOBAL_BANS or MTABOT_GLOBAL_BANS_ARCHIVE is missing")
 		return
 	}
 
@@ -113,4 +113,4 @@ func Load(b *mtabot.Bot) {
 	b.AddCommand(bot.checkserial, "checkserial")
 }
 
-// curl '' -H 'Connection: keep-alive' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'Authorization: Basic ***REMOVED***'
+// curl '' -H 'Connection: keep-alive' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'Authorization: Basic '

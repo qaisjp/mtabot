@@ -98,13 +98,13 @@ func (result *banData) importFromURL(url string) error {
 
 func getBanData() (*banData, error) {
 	result := &banData{nil, make(map[string][]*banitem), make(map[int]*banitem)}
-	if err := result.importFromURL("***REMOVED***"); err != nil {
+	if err := result.importFromURL(os.Getenv("MTABOT_GLOBAL_BANS_ARCHIVE")); err != nil {
 		return nil, errors.Wrap(err, "archive")
 	}
 	for _, row := range result.items {
 		row.Archived = true
 	}
-	if err := result.importFromURL("***REMOVED***"); err != nil {
+	if err := result.importFromURL(os.Getenv("MTABOT_GLOBAL_BANS")); err != nil {
 		return nil, errors.Wrap(err, "non-archive")
 	}
 	return result, nil

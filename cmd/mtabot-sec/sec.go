@@ -77,13 +77,14 @@ func (b *bot) checkserial(cmd string, s *discordgo.Session, m *discordgo.Message
 			for _, ban := range bans {
 				embeds = append(embeds, ban.toEmbed())
 			}
-		} else {
-			embeds = append(embeds, &discordgo.MessageEmbed{
-				Title:       serial,
-				Description: description,
-				Color:       0x777777,
-			})
+			continue
 		}
+
+		embeds = append(embeds, &discordgo.MessageEmbed{
+			Title:       serial,
+			Description: description,
+			Color:       0x777777,
+		})
 	}
 
 	footer := &discordgo.MessageEmbedFooter{

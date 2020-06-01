@@ -27,13 +27,7 @@ func main() {
 	}
 	discord.StateEnabled = true
 
-	karma, err := mtabot.NewKarmaBox("karma.json")
-	if err != nil {
-		panic(err)
-	}
-
 	bot := mtabot.NewBot(discord)
-	bot.Karma = karma
 
 	// Open a websocket connection to Discord and begin listening.
 	err = discord.Open()

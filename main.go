@@ -48,7 +48,6 @@ const itsLuaMessage = `It's Lua, not LUA. https://www.lua.org/about.html
 
 type Bot struct {
 	discord *discordgo.Session
-	Karma   *karmaBox
 
 	commands map[string]GenericCommand
 }
@@ -62,7 +61,6 @@ func NewBot(discord *discordgo.Session) *Bot {
 	}
 	discord.AddHandler(b.onMessageCreate)
 	b.AddCommand(b.cmdTopic, "topic")
-	b.AddCommand(b.cmdKarma, "karma")
 	b.AddCommand(b.cmdPchat, "pchat")
 	b.AddCommand(b.cmdMute, "cmute", "cunmute")
 	b.AddCommand(b.cmdModPing, "mod", "mods")
@@ -120,18 +118,6 @@ func (b *bot) onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 
 	if channel.ParentID != privateChannelGroup {
 		b.checkMessageAttachments(s, m)
-	}
-
-	if karmaRegexp.MatchString(m.Content) {
-		parts := karmaRegexp.FindStringSubmatch(m.Content)
-
-		uid := parts[1]
-		positive := parts[2] == "++"
-		reason := ""
-		if len(parts) == 4 {
-			reason = parts[3]
-		}
-		b.karmaAction(m.Message, uid, positive, reason)
 	}
 
 	parts := strings.Fields(m.Content)

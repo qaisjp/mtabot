@@ -190,13 +190,20 @@ func (i *banitem) toEmbed() *discordgo.MessageEmbed {
 	if strings.Contains(note, "[auto]") {
 		note = "[auto] Ask anti-cheat team for details"
 	}
+	if note == "" {
+		note = "(none provided)"
+	}
+	reason := i.Reason
+	if reason == "" {
+		reason = "(none provided)"
+	}
 
 	e := &discordgo.MessageEmbed{
 		Description: "[Avoid sharing private information with users](https://discordapp.com/channels/278474088903606273/307874986721542144/677102248848785418)",
 		Title:       fmt.Sprintf("%d: %s", i.ID, i.Serial),
 		Fields: []*discordgo.MessageEmbedField{
 			{Name: "Note (**private**)", Value: note},
-			{Name: "Reason", Value: i.Reason, Inline: true},
+			{Name: "Reason", Value: reason, Inline: true},
 			{Name: "Status", Value: status, Inline: true},
 			{Name: "Created at", Value: i.CreatedAt.Format(time.RFC1123Z)},
 		},

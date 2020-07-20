@@ -123,10 +123,10 @@ func banitemFromInterface(data []interface{}) *banitem {
 		CreatedAt:      nil, // 3 - parsed below
 		UpdatedAt:      nil, // 4 - parsed below
 		Note:           data[5].(string),
-		Enabled:        data[6].(float64) == 1,
-		HasEnd:         data[7].(float64) == 1,
-		ExpiredAt:      nil, // 8 - parsed below
-		AllowedServers: data[9].(string),
+		Enabled:        data[7].(float64) == 1,
+		HasEnd:         data[8].(float64) == 1,
+		ExpiredAt:      nil, // 9 - parsed below
+		AllowedServers: data[10].(string),
 	}
 
 	// Parsing times
@@ -148,7 +148,7 @@ func banitemFromInterface(data []interface{}) *banitem {
 			item.UpdatedAt = &t
 		}
 
-		if str, ok := data[8].(string); ok && str != "" {
+		if str, ok := data[9].(string); ok && str != "" {
 			if str == "0000-00-00 00:00:00" {
 				item.ExpiredAt = &time.Time{}
 			} else {

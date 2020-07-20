@@ -39,7 +39,7 @@ func (b *bot) checkMessageAttachments(s *discordgo.Session, m *discordgo.Message
 
 	_, _ = s.ChannelMessageSendEmbed(feedChannel, &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
-			Name:    m.Author.String(),
+			Name:    m.Author.String() + " (" + m.Author.ID + ")",
 			IconURL: m.Author.AvatarURL(""),
 		},
 		Timestamp:   string(m.Timestamp),

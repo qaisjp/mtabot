@@ -13,7 +13,8 @@ func (b *bot) checkMessageAttachments(s *discordgo.Session, m *discordgo.Message
 	for _, a := range m.Attachments {
 		if strings.HasSuffix(a.Filename, ".exe") {
 			heuristics = append(heuristics, "has suffix `.exe`")
-		} else if strings.HasSuffix(a.Filename, ".dll") {
+		}
+		if strings.HasSuffix(a.Filename, ".dll") {
 			heuristics = append(heuristics, "has suffix `.dll`")
 		}
 
@@ -21,6 +22,10 @@ func (b *bot) checkMessageAttachments(s *discordgo.Session, m *discordgo.Message
 			filenameValue += ", "
 		}
 		filenameValue += a.Filename
+	}
+
+	if filenameValue == "" {
+		filenameValue = "(none)"
 	}
 
 	heuristicText := "Heuristic"

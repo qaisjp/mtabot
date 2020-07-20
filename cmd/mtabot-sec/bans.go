@@ -111,7 +111,7 @@ func getBanData() (*banData, error) {
 }
 
 func banitemFromInterface(data []interface{}) *banitem {
-	if len(data) != 10 {
+	if len(data) != 11 {
 		fmt.Printf("data is bad length %d - %#v\n", len(data), data)
 		return nil
 	}

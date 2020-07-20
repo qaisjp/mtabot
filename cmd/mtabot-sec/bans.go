@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -26,6 +25,7 @@ type banitem struct {
 	CreatedAt      *time.Time `json:"added"`
 	UpdatedAt      *time.Time `json:"updated"`
 	Note           string     `json:"note"`
+	NotePrivate    string
 	Enabled        bool       `json:"enabled"`
 	HasEnd         bool       `json:"has_end"`
 	ExpiredAt      *time.Time `json:"endtime"`
@@ -123,6 +123,7 @@ func banitemFromInterface(data []interface{}) *banitem {
 		CreatedAt:      nil, // 3 - parsed below
 		UpdatedAt:      nil, // 4 - parsed below
 		Note:           data[5].(string),
+		NotePrivate:    data[6].(string),
 		Enabled:        data[7].(float64) == 1,
 		HasEnd:         data[8].(float64) == 1,
 		ExpiredAt:      nil, // 9 - parsed below
@@ -187,12 +188,15 @@ func (i *banitem) toEmbed() *discordgo.MessageEmbed {
 	}
 
 	note := i.Note
-	if strings.Contains(note, "[auto]") {
-		note = "[auto] Ask anti-cheat team for details"
-	}
 	if note == "" {
 		note = "(none provided)"
+		if i.NotePrivate != "" {
+			note = "[unavailable] Ask anti-cheat team for details."
+		}
+	} else if i.NotePrivate != "" {
+		note += "\n\nAsk anti-cheat team for more details."
 	}
+
 	reason := i.Reason
 	if reason == "" {
 		reason = "(none provided)"

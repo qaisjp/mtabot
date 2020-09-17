@@ -35,6 +35,9 @@ type banitem struct {
 }
 
 func (i banitem) HasExpired() bool {
+	if !i.HasEnd {
+		return false
+	}
 	return i.ExpiredAt != nil && i.ExpiredAt.Before(time.Now())
 }
 
